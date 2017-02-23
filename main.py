@@ -50,23 +50,35 @@ def main():
 
         return REQ_matrix, VLAT_matrix, CLAT_matrix, video_stats, n_cache, cache_size
 
-    def init(P, vstats, n_cache, cache_size):
-        g = Generator(vstats, n_cache, cache_size)
+    def init(g, P, vstats, n_cache, cache_size):
         return g.get_generation(P, [])
 
-    def eval():
+    def eval(GEN):
         pass
 
-    def select():
-        pass
+    def select(GEN, scores, n_select):
+        sorted_gen = [z[0] for z in sorted(zip(GEN, scores), key=lambda pair: pair[1])]
+        best_score = sorted(scores)
+        return sorted_gen[:n_select], best_score
 
-    def breed():
-        pass
+
+    def breed(selection):
+        return g.get_generation(P, selection)
 
     REQ_mx, VLAT_mx, CLAT_mx, vstats, n_cache, cache_size = setup(filename)
 
-    GEN = init(P, vstats, n_cache, cache_size)
+    g = Generator(vstats, n_cache, cache_size)
+    GEN = init(g, P, vstats, n_cache, cache_size)
 
+    for i in range(150):
+        score_list = eval(GEN)
+
+        selection, best_score = select(GEN, score_list, S)
+
+        if i <= 148:
+            print("Gen #{0} - {1}".format(i, best_score))
+            GEN = breed(g, P, selection)
+        else: print(best_score)
 
 if __name__ == "__main__":
     main()

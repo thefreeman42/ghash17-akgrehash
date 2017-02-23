@@ -23,7 +23,7 @@ class Generator:
         sum_s = float(sum(size for size, requests in videos))
         for size, requests in videos:
             self.prob_dist.append(float(size) / sum_s * self.size_consideration_ratio + float(requests) / sum_r  * (1.0 - self.size_consideration_ratio) )
-        print(self.prob_dist)
+        #print(self.prob_dist)
 
     def random_cache(self):
         cache = np.zeros(shape = (1, self.video_count), dtype=np.int)
@@ -50,21 +50,21 @@ class Generator:
         return spec
 
     def mutate(self, specimenA, specimenB):
-        print(specimenA)
-        print(specimenB)
+        #print(specimenA)
+        #print(specimenB)
         specimenA[r.randrange(self.cache_count - 1)] = self.random_cache()
         return specimenA
 
     def recombine(self, specimenA, specimenB):
-        print(specimenA)
-        print(specimenB)
+        #print(specimenA)
+        #print(specimenB)
         rn = r.randrange(self.cache_count - 1)
         specimenA[rn] = specimenB[rn]
         return specimenA
 
     def cross_recombine(self, specimenA, specimenB):
-        print(specimenA)
-        print(specimenB)
+        #print(specimenA)
+        #print(specimenB)
         specimenA[r.randrange(self.cache_count - 1)] = specimenB[r.randrange(self.cache_count - 1)]
         return specimenA
 
@@ -73,9 +73,9 @@ class Generator:
         costs = [0.1, 0.08, 0.15]
         prob = [c/sum(costs) for c in costs]
         budget = 1.0
-        print(parentA)
+        #print(parentA)
         new_specimen = np.asmatrix(np.array(parentA).copy(), dtype = int)
-        print(new_specimen)
+        #print(new_specimen)
         while r.random() < budget:
             c = choice(range(len(actions)), 1, p=prob)[0]
             budget -= costs[c]
@@ -89,22 +89,30 @@ class Generator:
         return generation
 
     def new_generation(self, speciment_count, previous_best):   # genetic generation of specimens
-        prob_un = [math.exp(-float(x) / float(speciment_count)) for x in range(speciment_count)]
+        prev_n = len(previous_best)
+
+        prob_un = [math.exp(-float(x) / float(prev_n)) for x in range(prev_n)]
         prob = [x / sum(prob_un) for x in prob_un]
+
+        # print(len(range(prev_n)))
+        # print(len(prob))
+
         new_gen = previous_best
         for i in range(speciment_count - len(previous_best)):
-            selected = choice(range(speciment_count), 2, p = prob, replace=False)
-            print(previous_best[selected[0]])
-            print(previous_best[selected[1]])
-            print('foo')
-            new_gen.append(self.new_speciment(previous_best[selected[0]], previous_best[selected[1]]))
+            selected = choice(range(prev_n), 2, replace=False, p=prob)
+            # print(selected[0])
+            # print(selected[1])
+            # print(previous_best[selected[0]])
+            # print(previous_best[selected[1]])
+            # print('foo')
+            new_gen.append(self.new_specimen(previous_best[selected[0]], previous_best[selected[1]]))
         return new_gen
 
     def get_generation(self, speciment_count, previous_best):   # get new generation
         if previous_best == []:
             return self.random_generation(speciment_count)
         else:
-            return self.new_specimen(speciment_count, previous_best)
+            return self.new_generation(speciment_count, previous_best)
 
     def print_speciment(self, speciment):
         output = {}
@@ -122,13 +130,13 @@ class Generator:
         fin = '\n'.join(data)
         return fin
 
-vids = [[50, 1000], [50, 1000], [80, 0], [30, 1500]]
-
-gen = Generator(vids, 3, 100)
-generation = gen.get_generation(10, [])
-for s in generation:
-    print(gen.print_speciment(s))
-print('\n\n')
-generation2 = gen.get_generation(10, generation[:3])
-for s in generation:
-    print(gen.print_speciment(s))
+# vids = [[50, 1000], [50, 1000], [80, 0], [30, 1500]]
+#
+# gen = Generator(vids, 3, 100)
+# generation = gen.get_generation(5, [])
+# for s in generation:
+#     print(gen.print_speciment(s))
+# print('\n\n')
+# generation2 = gen.get_generation(5, generation[0:2])
+# for s in generation2:
+#     print(gen.print_speciment(s))

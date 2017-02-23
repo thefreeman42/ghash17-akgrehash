@@ -32,7 +32,7 @@ class Generator:
         vids = []
         while valid:
             vid = choice(range(self.video_count), 1, p=self.prob_dist)[0]
-            print(vid)
+            #print(vid)
             if vid in vids:
                 valid = False
             elif self.videos[vid][0] > available_size:
@@ -50,16 +50,22 @@ class Generator:
         return spec
 
     def mutate(self, specimenA, specimenB):
-        specimenA[r.randrange(self.cache_count)] = self.random_cache()
+        print(specimenA)
+        print(specimenB)
+        specimenA[r.randrange(self.cache_count - 1)] = self.random_cache()
         return specimenA
 
     def recombine(self, specimenA, specimenB):
-        rn = r.randrange(self.cache_count)
+        print(specimenA)
+        print(specimenB)
+        rn = r.randrange(self.cache_count - 1)
         specimenA[rn] = specimenB[rn]
         return specimenA
 
     def cross_recombine(self, specimenA, specimenB):
-        specimenA[r.randrange(self.cache_count)] = specimenB[r.randrange(self.cache_count)]
+        print(specimenA)
+        print(specimenB)
+        specimenA[r.randrange(self.cache_count - 1)] = specimenB[r.randrange(self.cache_count - 1)]
         return specimenA
 
     def new_specimen(self, parentA, parentB):      # genetic specimen
@@ -67,8 +73,9 @@ class Generator:
         costs = [0.1, 0.08, 0.15]
         prob = [c/sum(costs) for c in costs]
         budget = 1.0
-
+        print(parentA)
         new_specimen = np.asmatrix(np.array(parentA).copy(), dtype = int)
+        print(new_specimen)
         while r.random() < budget:
             c = choice(range(len(actions)), 1, p=prob)[0]
             budget -= costs[c]
@@ -87,9 +94,11 @@ class Generator:
         new_gen = previous_best
         for i in range(speciment_count - len(previous_best)):
             selected = choice(range(speciment_count), 2, p = prob, replace=False)
+            print(previous_best[selected[0]])
+            print(previous_best[selected[1]])
+            print('foo')
             new_gen.append(self.new_speciment(previous_best[selected[0]], previous_best[selected[1]]))
         return new_gen
-
 
     def get_generation(self, speciment_count, previous_best):   # get new generation
         if previous_best == []:
@@ -98,12 +107,28 @@ class Generator:
             return self.new_specimen(speciment_count, previous_best)
 
     def print_speciment(self, speciment):
-        print(np.transpose(np.nonzero(speciment)))
+        output = {}
+        for n, i in np.transpose(np.nonzero(speciment)):
+            if n not in output.keys():
+                output[n] = []
+            output[n].append(str(i))
+        #print(output)
+        #print(len(output))
+        data = []
+        data.append(str(len(output)))
+        for key in output:
+            st = str(key) + ' ' + ' '.join(output[key])
+            data.append(st)
+        fin = '\n'.join(data)
+        return fin
 
 vids = [[50, 1000], [50, 1000], [80, 0], [30, 1500]]
 
 gen = Generator(vids, 3, 100)
 generation = gen.get_generation(10, [])
-print(generation)
-print_speciment(generation[0])
-#generation2 = gen.get_generation(10, generation[:3])
+for s in generation:
+    print(gen.print_speciment(s))
+print('\n\n')
+generation2 = gen.get_generation(10, generation[:3])
+for s in generation:
+    print(gen.print_speciment(s))

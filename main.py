@@ -2,6 +2,7 @@
 from Endpoint import Endpoint
 import numpy as np
 from generator import Generator
+from assess import evaluate
 
 def main():
 
@@ -53,14 +54,13 @@ def main():
     def init(g, P, vstats, n_cache, cache_size):
         return g.get_generation(P, [])
 
-    def eval(GEN):
-        pass
+    def eval(R, L, C, GEN):
+        return evaluate(R, L, C, GEN)
 
     def select(GEN, scores, n_select):
         sorted_gen = [z[0] for z in sorted(zip(GEN, scores), key=lambda pair: pair[1])]
         best_score = sorted(scores)
         return sorted_gen[:n_select], best_score
-
 
     def breed(selection):
         return g.get_generation(P, selection)
@@ -71,7 +71,7 @@ def main():
     GEN = init(g, P, vstats, n_cache, cache_size)
 
     for i in range(150):
-        score_list = eval(GEN)
+        score_list = eval(REQ_mx, VLAT_mx, CLAT_mx, GEN)
 
         selection, best_score = select(GEN, score_list, S)
 

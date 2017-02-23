@@ -1,10 +1,13 @@
 # AKG ReHash @ Google Hash Code 2017
 from Endpoint import Endpoint
 import numpy as np
+from generator import Generator
 
 def main():
 
     filename = 'me_at_the_zoo.in'
+    P = input('Population size: ')
+    S = input('Selection size: ')
 
     def setup(f):
         with open(f) as file:
@@ -25,8 +28,9 @@ def main():
 
         REQ_array = [[0 for _ in range(n_endpoint)] for _ in range(n_video)]
         for i in range(idx, len(lines)):
-            req_line = lines[i].strip().split(' ')
-            REQ_array[int(req_line[4])][int(req_line[8])] = req_line[0]
+            req_line = [int(x) for x in lines[i].strip().split(' ')]
+            if video_sizes[req_line[4]] <= cache_size:
+                REQ_array[req_line[4]][req_line[8]] = req_line[0]
         REQ_matrix = np.array(REQ_array)
 
         VLAT_array = []
@@ -40,10 +44,15 @@ def main():
                 CLAT_array[i][key] = endpoints[i].cache_list[key]
         CLAT_matrix = np.array(CLAT_array).T
 
-        return REQ_matrix, VLAT_matrix, CLAT_matrix
+        video_stats = []
+        for i in range(n_video):
+            video_stats.append([video_sizes[i], sum(REQ_array[i])])
 
-    def init():
-        pass
+        return REQ_matrix, VLAT_matrix, CLAT_matrix, video_stats, n_cache, cache_size
+
+    def init(P, vstats, n_cache, cache_size):
+        g = Generator(vstats, n_cache, cache_size)
+        return g.get_generation(P, [])
 
     def eval():
         pass
@@ -54,7 +63,10 @@ def main():
     def breed():
         pass
 
-    setup(filename)
+    REQ_mx, VLAT_mx, CLAT_mx, vstats, n_cache, cache_size = setup(filename)
+
+    GEN = init(P, vstats, n_cache, cache_size)
+
 
 if __name__ == "__main__":
     main()

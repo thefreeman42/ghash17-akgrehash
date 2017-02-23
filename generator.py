@@ -1,6 +1,7 @@
 import numpy as np
 from numpy.random import choice
 import random as r
+import math
 
 class Generator:
     videos = []
@@ -46,7 +47,7 @@ class Generator:
         spec = np.zeros(shape = (self.cache_count, self.video_count), dtype=np.int)
         for i in range(self.cache_count):
             spec[i] = self.random_cache()
-        return str(spec)
+        return spec
 
     def mutate(self, specimenA, specimenB):
         specimenA[r.randrange(self.cache_count)] = self.random_cache()
@@ -67,10 +68,12 @@ class Generator:
         prob = [c/sum(costs) for c in costs]
         budget = 1.0
 
-        new_speciment = np.asmatrix(np.array(parentA).copy(), dtype = int)
-        #while r.random() < budget:
-
-
+        new_specimen = np.asmatrix(np.array(parentA).copy(), dtype = int)
+        while r.random() < budget:
+            c = choice(range(len(actions)), 1, p=prob)[0]
+            budget -= costs[c]
+            new_specimen = actions[c](new_specimen, parentB)
+        return new_specimen
 
     def random_generation(self, speciment_count):   # randomised generation of specimens
         generation = []
@@ -79,7 +82,14 @@ class Generator:
         return generation
 
     def new_generation(self, speciment_count, previous_best):   # genetic generation of specimens
-        pass
+        prob_un = [math.exp(-float(x) / float(speciment_count)) for x in range(speciment_count)]
+        prob = [x / sum(prob_un) for x in prob_un]
+        new_gen = previous_best
+        for i in range(speciment_count - len(previous_best)):
+            selected = choice(range(speciment_count), 2, p = prob, replace=False)
+            new_gen.append(self.new_speciment(previous_best[selected[0]], previous_best[selected[1]]))
+        return new_gen
+
 
     def get_generation(self, speciment_count, previous_best):   # get new generation
         if previous_best == []:
@@ -87,8 +97,13 @@ class Generator:
         else:
             return self.new_specimen(speciment_count, previous_best)
 
+    def print_speciment(self, speciment):
+        print(np.transpose(np.nonzero(speciment)))
+
 vids = [[50, 1000], [50, 1000], [80, 0], [30, 1500]]
 
 gen = Generator(vids, 3, 100)
 generation = gen.get_generation(10, [])
-print('\n'.join(generation))
+print(generation)
+print_speciment(generation[0])
+#generation2 = gen.get_generation(10, generation[:3])
